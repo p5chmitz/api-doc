@@ -2,6 +2,7 @@ pub use sea_orm_migration::prelude::*;
 
 mod m20220101_000001_create_table;
 mod m20250324_012019_add_test_column_to_table;
+mod m20250325_000311_fix_user_table;
 
 pub struct Migrator;
 
@@ -11,6 +12,7 @@ impl MigratorTrait for Migrator {
         vec![
             Box::new(m20220101_000001_create_table::Migration),
             Box::new(m20250324_012019_add_test_column_to_table::Migration),
+            Box::new(m20250325_000311_fix_user_table::Migration),
         ]
     }
 }
