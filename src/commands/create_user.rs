@@ -45,20 +45,16 @@ pub fn handle(matches: &ArgMatches, settings: &Settings) -> anyhow::Result<()> {
             .build()
             .unwrap()
             .block_on(async move {
-                let db_url = settings.database.url
-                    .clone().unwrap_or("".to_string());
-                let conn: sea_orm::DatabaseConnection = 
-                    Database::connect(db_url)
+                let db_url = settings.database.url.clone().unwrap_or("".to_string());
+                let conn: sea_orm::DatabaseConnection = Database::connect(db_url)
                     .await
                     .expect("Database connection failed");
 
-                let users: Vec<entities::user::Model> = 
-                    entities::user::Entity::find()
-                    .filter(entities::user::Column::Username
-                    .eq(username))
+                let users: Vec<entities::user::Model> = entities::user::Entity::find()
+                    .filter(entities::user::Column::Username.eq(username))
                     .all(&conn)
                     .await?;
-                
+
                 // Early return if the service matches
                 // on an existing username
                 if !users.is_empty() {
@@ -67,8 +63,7 @@ pub fn handle(matches: &ArgMatches, settings: &Settings) -> anyhow::Result<()> {
                 }
 
                 let encrypted_password = encrypt_password(password)?;
-                let admin_model = 
-                    entities::user::ActiveModel::from_json(json!({
+                let admin_model = entities::user::ActiveModel::from_json(json!({
                     "username": username,
                     "password": encrypted_password,
                 }))?;

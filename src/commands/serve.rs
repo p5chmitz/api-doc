@@ -5,6 +5,8 @@ use clap::{value_parser, Arg, ArgMatches, Command};
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::sync::Arc;
 use tower_http::trace::TraceLayer;
+//use sea_orm::{ActiveModelTrait, Database, EntityTrait};
+use sea_orm::Database;
 
 /// Starts a server with a default port of 8080
 pub fn configure() -> Command {
@@ -22,7 +24,6 @@ pub fn configure() -> Command {
 pub fn handle(matches: &ArgMatches, settings: &Settings) -> anyhow::Result<()> {
     if let Some(matches) = matches.subcommand_matches("serve") {
         let port: u16 = *matches.get_one("port").unwrap_or(&8080);
-        //println!("TODO: Starting the webserver on port {}", port);
 
         start_tokio(port, settings)?;
     }
@@ -36,7 +37,14 @@ fn start_tokio(port: u16, settings: &Settings) -> anyhow::Result<()> {
         .build()
         .unwrap()
         .block_on(async move {
-            let state = Arc::new(ApplicationState::new(settings)?);
+            let db_url = settings.database.url.clone().unwrap_or("".to_string());
+            let db_conn: sea_orm::DatabaseConnection = Database::connect(db_url)
+                .await
+                .expect("Database connection failed");
+
+            let state = Arc::new(ApplicationState::new(settings, db_conn)?);
+
+            //let state = Arc::new(ApplicationState::new(settings)?);
 
             let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), port);
             //let routes = Router::new();

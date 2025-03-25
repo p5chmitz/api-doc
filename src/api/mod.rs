@@ -2,9 +2,9 @@ use crate::state::ApplicationState;
 use axum::Router;
 use std::sync::Arc;
 
+mod handlers;
 mod request;
 mod response;
-mod handlers;
 mod v1;
 
 pub fn configure(state: Arc<ApplicationState>) -> Router {
