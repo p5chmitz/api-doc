@@ -1,5 +1,5 @@
-use crate::api::request::login::LoginRequest;
-use crate::api::response::login::LoginResponse;
+use crate::api::request::login_request::LoginRequest;
+use crate::api::response::login_response::LoginResponse;
 use crate::api::response::TokenClaims;
 use crate::state::ApplicationState;
 use axum::extract::State;

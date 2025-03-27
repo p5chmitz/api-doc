@@ -1,7 +1,81 @@
-Login
+Get a JWT:
 
 curl -v --request POST \
 --url http://127.0.0.1:8080/v1/login \
 --header "Content-Type: application/json" \
 --data '{"username": "admin", "password": "apidocpass"}'
+
+Get and save token to an env var:
+
+TOKEN=$(curl -s --request POST \
+  --url http://127.0.0.1:8080/v1/login \
+  --header "Content-Type: application/json" \
+  --data '{"username": "admin", "password": "apidocpass"}' | jq -r '.token')
+
+Create a dog record:
+
+curl -v --request POST \
+--url http://127.0.0.1:8080/v1/dogs \
+--header "Content-Type: application/json" \
+--header "Authorization: Bearer $TOKEN" \
+--data '{
+  "name": "!!!", 
+  "description": "...", 
+  "date_of_birth": "2024-01-01", 
+  "chip_number": "437", 
+  "gender": "male", 
+  "is_sterilized": false, 
+  "breed": "labradoodle", 
+  "size": "medium", 
+  "weight": 12,
+  "hair": "short"
+}'
+
+Create a patient record:
+
+curl -v --request POST \
+--url http://127.0.0.1:8080/v1/patient \
+--header "Content-Type: application/json" \
+--header "Authorization: Bearer $TOKEN" \
+--data '{
+  "name": {
+    "first": "Dingus",
+    "middle": "A.",
+    "surname": "Dangus"
+  },
+  "address": {
+    "address_lines": ["123 Thunder St", "ste 1300"],
+    "sublocality": "",
+    "locality": "",
+    "administrative_area": "",
+    "postal_code": "",
+    "country_region": "USA"
+  },
+  "birth_date": {
+    "day": 12,
+    "month": 8,
+    "year": 1987
+  }
+}'
+
+curl -v --request POST \
+--url http://127.0.0.1:8080/v1/patient \
+--header "Content-Type: application/json" \
+--header "Authorization: Bearer $TOKEN" \
+--data '{
+  "name": {
+    "first": "Bobson",
+    "surname": "Dugnut"
+  },
+  "address": {
+    "address_lines": ["123 Fake St"],
+    "country_region": "USA"
+  },
+  "birth_date": {
+    "day": 12,
+    "month": 8,
+    "year": 1987
+  }
+}'
+
 

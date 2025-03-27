@@ -18,7 +18,7 @@ serde_json = "1"
 
 # Runtime and framework
 tokio = { version = "1", features = ["full"] } # Async runtime
-axum = { version = "0.6" } # Web framework
+axum = { version = "0.6", features = ["macros"] } # Web framework
 arc-swap = { version = "1.7" } # Making Rust more Rusty
 
 # Observability

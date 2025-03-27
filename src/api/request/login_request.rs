@@ -1,6 +1,6 @@
 use serde::Deserialize;
 
-#[allow(dead_code)]
+//#[allow(dead_code)]
 #[derive(Deserialize)]
 pub struct LoginRequest {
     pub username: String,
