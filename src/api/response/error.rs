@@ -2,22 +2,42 @@ use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::Json;
 use serde::Serialize;
+use utoipa::ToSchema;
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 pub struct ErrorResponse {
-    pub status: String,
+    /// The HTTP status code value
+    #[schema(example = "422")]
+    pub status_code: u16,
+
+    /// The HTTP status code reason
+    #[schema(example = "Unprocessable Entity")]
+    pub reason: &'static str,
+
+    /// A contextual message regarding the error
+    #[schema(
+        example = "Failed to parse the request body as JSON: birth_date.?: expected `,` or `}` at line 12 column 9"
+    )]
     pub message: String,
 }
 
-pub struct AppError(anyhow::Error);
+//#[derive(Serialize, ToSchema)]
+//pub enum Status {
+//    Success,
+//    _Error,
+//}
+
+pub struct AppError(pub StatusCode, pub anyhow::Error);
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         (
-            StatusCode::INTERNAL_SERVER_ERROR,
+            self.0,
             Json(ErrorResponse {
-                status: "error".to_string(),
-                message: self.0.to_string(),
+                //status: Status::Error,
+                status_code: self.0.as_u16(),
+                reason: self.0.canonical_reason().unwrap_or("Unknown error"),
+                message: self.1.to_string(),
             }),
         )
             .into_response()
@@ -29,6 +49,6 @@ where
     E: Into<anyhow::Error>,
 {
     fn from(err: E) -> Self {
-        Self(err.into())
+        Self(StatusCode::INTERNAL_SERVER_ERROR, err.into())
     }
 }

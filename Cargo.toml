@@ -7,6 +7,7 @@ edition = "2021"
 # Convenience crates for project setup
 anyhow = "1.0.97" # Elegant error handling
 clap = "4.5" # Command line argument parsing
+uuid = { version = "1.16", features = ["v4", "serde"] } 
 
 # Configuration management
 config = "0.15" # Primary config tooling
@@ -14,7 +15,7 @@ dotenv = "0.15.0" # A cleaner way to use .env files
 
 # Data marshalling
 serde = { version = "1.0", features = ["derive"] }
-serde_json = "1"
+serde_json = { version = "1", features = ["preserve_order"] }
 
 # Runtime and framework
 tokio = { version = "1", features = ["full"] } # Async runtime
@@ -25,7 +26,7 @@ arc-swap = { version = "1.7" } # Making Rust more Rusty
 tracing = { version = "0.1", features = ["log"] }
 tracing-log = { version = "0.1" }
 tracing-subscriber = { version = "0.2", features = ["registry", "env-filter"] }
-tower-http = { version = "0.3.5", features = ["trace"] }
+tower-http = { version = "0.3.5", features = ["trace", "cors"] }
 
 # Persistence
 sea-orm = { version = "1.1.*", features = [ "sqlx-postgres", "runtime-tokio-rustls", "macros" ] }
@@ -38,3 +39,8 @@ chrono = "0.4.24" # Timestamp tool
 # Password hashing
 password-hash = "0.5" # Hash framework
 argon2 = "0.5" # Chosen algorithm
+
+# OAS doc and UI support
+utoipa = { version = "4.1.0", features = ["axum_extras"] } # add chrono for NaiveDate support
+utoipa-swagger-ui = { version = "4.0.0", features = ["axum"] }
+utoipa-scalar = { version = "0.3", features = ["axum"] }

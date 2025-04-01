@@ -1,4 +1,6 @@
+use crate::api::middleware::json::CustomJson;
 use crate::api::request::login_request::LoginRequest;
+use crate::api::response::error::AppError;
 use crate::api::response::login_response::LoginResponse;
 use crate::api::response::TokenClaims;
 use crate::state::ApplicationState;
@@ -15,10 +17,20 @@ use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
 
 use crate::entities::user;
 
+#[utoipa::path(
+    post,
+    path = "/login",
+    tag = "Auth",
+    request_body = LoginRequest,
+    responses(
+        (status = 200, description = "Success", body = LoginResponse),
+        (status = 400, description = "Generic error response format", body = ErrorResponse),
+    ),
+)]
 pub async fn login(
     State(state): State<Arc<ApplicationState>>,
-    Json(payload): Json<LoginRequest>,
-) -> Result<Json<LoginResponse>, StatusCode> {
+    CustomJson(payload): CustomJson<LoginRequest>,
+) -> Result<Json<LoginResponse>, AppError> {
     // Validate that the password is correct
     match user::Entity::find()
         .filter(user::Column::Username.eq(&payload.username))
@@ -30,7 +42,10 @@ pub async fn login(
         Ok(admins) => {
             // The user wasn't found
             if admins.is_none() {
-                return Err(StatusCode::UNAUTHORIZED);
+                return Err(AppError(
+                    StatusCode::UNAUTHORIZED,
+                    anyhow!("User doesn't exist"),
+                ));
             }
             //if admins.is_empty() {
             //    return Err(StatusCode::UNAUTHORIZED)
@@ -42,11 +57,21 @@ pub async fn login(
                 //if validate_password(&payload.password, &admin.password)
                 .is_err()
             {
-                return Err(StatusCode::UNAUTHORIZED);
+                //return Err(StatusCode::UNAUTHORIZED);
+                return Err(AppError(
+                    StatusCode::UNAUTHORIZED,
+                    anyhow!("Incorrect password"),
+                ));
             }
         }
         // Something went wrong on the client side
-        Err(_) => return Err(StatusCode::INTERNAL_SERVER_ERROR),
+        //Err(_) => return Err(StatusCode::INTERNAL_SERVER_ERROR),
+        Err(_) => {
+            return Err(AppError(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                anyhow!("We fucked up"),
+            ))
+        }
     }
 
     // If validation doesn't error, issue the token
@@ -69,12 +94,9 @@ pub async fn login(
         &claims,
         &EncodingKey::from_secret(secret.as_bytes()),
     )
-    .unwrap();
+    .unwrap_or("".to_string());
 
-    let response = LoginResponse {
-        status: "success".to_string(),
-        token,
-    };
+    let response = LoginResponse { token };
 
     Ok(Json(response))
 }

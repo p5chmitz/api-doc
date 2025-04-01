@@ -12,25 +12,6 @@ TOKEN=$(curl -s --request POST \
   --header "Content-Type: application/json" \
   --data '{"username": "admin", "password": "apidocpass"}' | jq -r '.token')
 
-Create a dog record:
-
-curl -v --request POST \
---url http://127.0.0.1:8080/v1/dogs \
---header "Content-Type: application/json" \
---header "Authorization: Bearer $TOKEN" \
---data '{
-  "name": "!!!", 
-  "description": "...", 
-  "date_of_birth": "2024-01-01", 
-  "chip_number": "437", 
-  "gender": "male", 
-  "is_sterilized": false, 
-  "breed": "labradoodle", 
-  "size": "medium", 
-  "weight": 12,
-  "hair": "short"
-}'
-
 Create a patient record:
 
 curl -v --request POST \
@@ -65,7 +46,7 @@ curl -v --request POST \
 --data '{
   "name": {
     "first": "Bobson",
-    "surname": "Dugnut"
+    "surname": true
   },
   "address": {
     "address_lines": ["123 Fake St"],
@@ -78,4 +59,9 @@ curl -v --request POST \
   }
 }'
 
+Get a patient recrod:
 
+curl -v --request GET \
+--url http://127.0.0.1:8080/v1/patient/b4185298-918b-4ae1-9b2b-580969218de0 \
+--header "Content-Type: application/json" \
+--header "Authorization: Bearer $TOKEN" \

@@ -1,12 +1,13 @@
+use chrono::{DateTime, Utc};
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
-//use chrono::NaiveDate;
+use utoipa::ToSchema;
 
 // Name Entity
 pub mod name {
     use super::*;
 
-    #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize)]
+    #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize, ToSchema)]
     #[sea_orm(table_name = "name")]
     pub struct Model {
         #[sea_orm(primary_key)]
@@ -27,13 +28,13 @@ pub mod name {
 pub mod address {
     use super::*;
 
-    #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize)]
+    #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize, ToSchema)]
     #[sea_orm(table_name = "address")]
     pub struct Model {
         #[sea_orm(primary_key)]
         #[serde(skip_deserializing)]
         pub id: i32,
-        pub address_lines: Vec<String>, 
+        pub address_lines: Vec<String>,
         pub sublocality: String,
         pub locality: String,
         pub administrative_area: String,
@@ -51,7 +52,7 @@ pub mod address {
 pub mod birthdate {
     use super::*;
 
-    #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize)]
+    #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize, ToSchema)]
     #[sea_orm(table_name = "birthdate")]
     pub struct Model {
         #[sea_orm(primary_key)]
@@ -66,33 +67,55 @@ pub mod birthdate {
     pub enum Relation {}
 
     impl ActiveModelBehavior for ActiveModel {}
-
 }
 
 // Patient Entity
-#[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize, ToSchema)]
 #[sea_orm(table_name = "patient")]
 pub struct Model {
     #[sea_orm(primary_key)]
     #[serde(skip_deserializing)]
     pub id: i32,
 
-    #[sea_orm(belongs_to = "name::Model", from = "Column::NameId", to = "name::Column::Id")]
+    pub patient_id: Uuid,
+    pub created_at: DateTime<Utc>,
+
+    #[sea_orm(
+        belongs_to = "name::Model",
+        from = "Column::NameId",
+        to = "name::Column::Id"
+    )]
     pub name_id: i32,
 
-    #[sea_orm(belongs_to = "address::Model", from = "Column::AddressId", to = "address::Column::Id")]
+    #[sea_orm(
+        belongs_to = "address::Model",
+        from = "Column::AddressId",
+        to = "address::Column::Id"
+    )]
     pub address_id: i32,
 
-    #[sea_orm(belongs_to = "birthdate::Model", from = "Column::BirthdateId", to = "birthdate::Column::Id")]
+    #[sea_orm(
+        belongs_to = "birthdate::Model",
+        from = "Column::BirthdateId",
+        to = "birthdate::Column::Id"
+    )]
     pub birthdate_id: i32,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    #[sea_orm(belongs_to = "name::Entity", from = "Column::NameId", to = "name::Column::Id")]
+    #[sea_orm(
+        belongs_to = "name::Entity",
+        from = "Column::NameId",
+        to = "name::Column::Id"
+    )]
     Name,
 
-    #[sea_orm(belongs_to = "address::Entity", from = "Column::AddressId", to = "address::Column::Id")]
+    #[sea_orm(
+        belongs_to = "address::Entity",
+        from = "Column::AddressId",
+        to = "address::Column::Id"
+    )]
     Address,
 }
 
@@ -113,7 +136,7 @@ impl ActiveModelBehavior for ActiveModel {}
 //}
 //#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 //pub struct AddressRequest {
-//    pub address_lines: String, 
+//    pub address_lines: String,
 //    pub sublocality: String,
 //    pub locality: String,
 //    pub administrative_area: String,
