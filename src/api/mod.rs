@@ -10,7 +10,7 @@ mod handlers;
 mod middleware;
 mod request;
 mod response;
-mod schemas;
+//mod schemas;
 mod v1;
 
 pub fn configure(state: Arc<ApplicationState>) -> Router {

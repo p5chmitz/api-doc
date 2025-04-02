@@ -1,5 +1,4 @@
 pub mod create_patient_response;
-pub mod dog;
 pub mod error;
 pub mod login_response;
 
