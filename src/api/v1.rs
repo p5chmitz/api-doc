@@ -8,19 +8,10 @@ use std::sync::Arc;
 
 pub fn configure(state: Arc<ApplicationState>) -> Router {
     Router::new()
-        //.route(
-        //    "/hello",
-        //    get(handlers::hello::hello).with_state(state.clone()),
-        //)
         .route(
             "/login",
             post(handlers::login_handler::login).with_state(state.clone()),
         )
-        //.route(
-        //    "/dogs",
-        //    post(handlers::dog::create)
-        //        .with_state(state.clone())
-        //        .route_layer(middleware::from_fn_with_state(state.clone(), auth)))
         .route(
             "/patient",
             post(handlers::create_patient_handler::create)
@@ -39,13 +30,6 @@ pub fn configure(state: Arc<ApplicationState>) -> Router {
                     crate::api::middleware::jwt::auth,
                 )),
         )
-    //.layer(
-    //    CorsLayer::new()
-    //        .allow_origin(Any)  // Allow all origins
-    //        .allow_methods(Any)  // Allow all HTTP methods
-    //        .allow_headers(Any) // Allow Authorization headers
-    //        .expose_headers(Any), // Ensure client can read response headers
-    //)
 }
 
 // OAS doc
@@ -78,11 +62,6 @@ use utoipa::{
             crate::api::response::create_patient_response::Patient,
             crate::api::response::create_patient_response::CreatePatientResponse,
             crate::api::response::error::ErrorResponse,
-
-            // Entities
-            //crate::entities::user::Model,
-            //crate::entities::patient::Model,
-
         ),
     ),
     modifiers(&SecurityAddon),

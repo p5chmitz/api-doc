@@ -4,7 +4,7 @@ use std::sync::Arc;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
-use utoipa_scalar::{Scalar, Servable};
+//use utoipa_scalar::{Scalar, Servable};
 
 mod handlers;
 mod middleware;

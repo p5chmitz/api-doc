@@ -1,7 +1,1 @@
-{
-    "database": {
-        "url": "pgsql://"
-    },
-    "token_secret": "super secret string",
-    "token_timeout_seconds": 3600
-}
+{}

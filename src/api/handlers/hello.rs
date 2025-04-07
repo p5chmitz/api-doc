@@ -4,7 +4,7 @@ use axum::http::StatusCode;
 use std::sync::Arc;
 
 /// Response generator for the /v1/hello endpoint
-pub async fn hello(State(state): State<Arc<ApplicationState>>) -> Result<String, StatusCode> {
+pub async fn _hello(State(state): State<Arc<ApplicationState>>) -> Result<String, StatusCode> {
     Ok(format!(
         "\nHello perverts! Config: {}\n\n",
         state

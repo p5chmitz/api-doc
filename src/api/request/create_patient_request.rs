@@ -1,8 +1,8 @@
 //use chrono::NaiveDate;
-use chrono::Utc;
+//use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
-use uuid::Uuid;
+//use uuid::Uuid;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
 /// The full legal name of the patient
