@@ -26,40 +26,36 @@ pub async fn handle(matches: &ArgMatches, settings: &Settings) -> anyhow::Result
         match Database::connect(&db_url).await {
             Ok(db_conn) => {
                 println!("✅ Database connection successful");
-
-                // Print applied migrations
-                match Migrator::get_applied_migrations(&db_conn).await {
-                    Ok(applied) => {
-                        println!("📦 Applied migrations: {}", applied.len());
-                    }
-                    Err(e) => {
-                        println!("⚠️ Error retrieving applied migrations: {e}");
-                    }
-                }
-
-                // Print pending migrations
+        
+                // Get pending migrations first
                 match Migrator::get_pending_migrations(&db_conn).await {
                     Ok(pending) => {
                         if pending.is_empty() {
-                            println!("✅ All migrations are up to date.");
+                            println!("✅ All migrations are up to date");
                         } else {
-                            println!("⚠️ {} pending migration(s) detected:", pending.len());
+                            println!("⚠️  {} pending migration(s) detected:", pending.len());
                             for m in &pending {
                                 println!("- {}", m.name());
+                            }
+        
+                            // Optionally apply them:
+                            match Migrator::up(&db_conn, None).await {
+                                Ok(_) => println!("🔧 Successfully applied migrations"),
+                                Err(e) => println!("❌ Failed to apply migrations: {e}"),
                             }
                         }
                     }
                     Err(e) => {
-                        println!("⚠️ Error retrieving pending migrations: {e}");
+                        println!("❌ Failed to check for pending migrations: {e}");
                     }
                 }
             }
             Err(e) => {
-                println!("⚠️ Database connection failed: {e}");
+                println!("❌ Database connection failed: {e}");
             }
         }
 
-        // Parsing and printing DB connection information
+// Parsing and printing DB connection information
         if let Some(connection) = parse_db_url(&db_url) {
             println!("\nDB connection details:");
             println!("   prefix: {}", connection.prefix);
