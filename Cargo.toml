@@ -8,6 +8,7 @@ edition = "2021"
 anyhow = "1.0.97" # Elegant error handling
 clap = "4.5" # Command line argument parsing
 uuid = { version = "1.16", features = ["v4", "serde"] } 
+regex = "1.11"
 
 # Configuration management
 config = "0.15" # Primary config tooling

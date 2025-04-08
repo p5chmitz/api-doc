@@ -9,7 +9,7 @@ pub fn main() -> anyhow::Result<()> {
     // Loads the .env file
     dotenv().ok();
 
-    // Defines a global -c/--config command 
+    // Defines a global -c/--config command
     // Global commands must come before sub-commands in the CLI
     let mut command = Command::new("API docs")
         .version("0.1.0")
@@ -55,19 +55,6 @@ pub fn main() -> anyhow::Result<()> {
     tracing::subscriber::set_global_default(subscriber).expect("Failed to set subscriber");
 
     commands::handle(&matches, &settings)?;
-
-    println!(
-        "db url: {}",
-        settings
-            .database
-            .url
-            .unwrap_or("missing database url".to_string())
-    );
-
-    println!(
-        "log level: {}",
-        settings.logging.log_level.unwrap_or("info".to_string())
-    );
 
     Ok(())
 }

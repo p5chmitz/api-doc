@@ -62,6 +62,6 @@ curl -v --request POST \
 Get a patient recrod:
 
 curl -v --request GET \
---url http://127.0.0.1:8080/v1/patient/b4185298-918b-4ae1-9b2b-580969218de0 \
+--url http://127.0.0.1:8080/v1/patient/a6115489-91b0-4ae7-a453-14a5fe2f6f51 \
 --header "Content-Type: application/json" \
---header "Authorization: Bearer $TOKEN" \
+--header "Authorization: Bearer $TOKEN"

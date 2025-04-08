@@ -49,38 +49,35 @@ pub async fn get_patient(
         .filter(patient::Column::PatientId.eq(patient_id))
         .one(state.db_conn.load().as_ref())
         .await
-    { 
+    {
         // await returns Result<Option<Model>, DbErr>
         // so you have to safely unwrap all its thorny layers
         Ok(conn) => {
             // If the search returns a hit, fetch its data,
             // assemble the JSON, and return it
             if let Some(model) = conn {
-            
                 // Fetch related name
                 let name = name::Entity::find_by_id(model.name_id)
                     .one(db)
                     .await?
-                    .ok_or_else(|| AppError(
-                            StatusCode::NOT_FOUND, 
-                            anyhow!("Name record not found")))?;
+                    .ok_or_else(|| {
+                        AppError(StatusCode::NOT_FOUND, anyhow!("Name record not found"))
+                    })?;
 
                 // Fetch related address
                 let address = address::Entity::find_by_id(model.address_id)
                     .one(db)
                     .await?
-                    .ok_or_else(|| AppError(
-                            StatusCode::NOT_FOUND, 
-                            anyhow!("Address record not found")))?;
+                    .ok_or_else(|| {
+                        AppError(StatusCode::NOT_FOUND, anyhow!("Address record not found"))
+                    })?;
 
                 // Fetch related birthdate
                 let birthdate = birthdate::Entity::find_by_id(model.birthdate_id)
                     .one(db)
                     .await?
                     .ok_or_else(|| {
-                        AppError(
-                            StatusCode::NOT_FOUND, 
-                            anyhow!("Birthdate record not found"))
+                        AppError(StatusCode::NOT_FOUND, anyhow!("Birthdate record not found"))
                     })?;
 
                 // Construct the response
@@ -108,16 +105,16 @@ pub async fn get_patient(
                 };
                 return Ok(Json(CreatePatientResponse {
                     data: response_data,
-                }))
+                }));
             // If the search is Ok, but there is no hit,
             // return a 404 NOT_FOUND error
             } else {
                 return Err(AppError(
                     StatusCode::NOT_FOUND,
                     anyhow!("Patient {patient_id} not found"),
-                ))
+                ));
             }
-        },
+        }
         // If the search is not Ok, issue a generic DB connection error
         // and obfuscate the specifics
         Err(_) => {
@@ -126,6 +123,5 @@ pub async fn get_patient(
                 anyhow!("Uh oh..."),
             ))
         }
-
     }
 }
