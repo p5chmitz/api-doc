@@ -38,11 +38,11 @@ pub async fn handle(matches: &ArgMatches, settings: &Settings) -> anyhow::Result
                                 println!("- {}", m.name());
                             }
         
-                            // Optionally apply them:
-                            match Migrator::up(&db_conn, None).await {
-                                Ok(_) => println!("🔧 Successfully applied migrations"),
-                                Err(e) => println!("❌ Failed to apply migrations: {e}"),
-                            }
+                            // Automatically apply pending migrations
+                            //match Migrator::up(&db_conn, None).await {
+                            //    Ok(_) => println!("🔧 Successfully applied migrations"),
+                            //    Err(e) => println!("❌ Failed to apply migrations: {e}"),
+                            //}
                         }
                     }
                     Err(e) => {
