@@ -20,14 +20,15 @@ pub async fn handle(matches: &ArgMatches, settings: &Settings) -> anyhow::Result
     if let Some(_matches) = matches.subcommand_matches("check") {
         let db_url = settings.database.url.clone().unwrap_or("".to_string());
 
-        println!("\nChecking database connection...\n");
+        println!("\nChecking database connection...");
 
         // Attempt to establish a database connection
         match Database::connect(&db_url).await {
             Ok(db_conn) => {
                 println!("✅ Database connection successful");
-        
-                // Get pending migrations first
+
+                println!("\nChecking migrations...");
+                // Get pending migrations
                 match Migrator::get_pending_migrations(&db_conn).await {
                     Ok(pending) => {
                         if pending.is_empty() {
@@ -37,12 +38,13 @@ pub async fn handle(matches: &ArgMatches, settings: &Settings) -> anyhow::Result
                             for m in &pending {
                                 println!("- {}", m.name());
                             }
-        
+
                             // Automatically apply pending migrations
-                            //match Migrator::up(&db_conn, None).await {
-                            //    Ok(_) => println!("🔧 Successfully applied migrations"),
-                            //    Err(e) => println!("❌ Failed to apply migrations: {e}"),
-                            //}
+                            println!("\nAutomatically applying pending migrations...");
+                            match Migrator::up(&db_conn, None).await {
+                                Ok(_) => println!("🔧 Successfully applied migrations"),
+                                Err(e) => println!("❌ Failed to apply migrations: {e}"),
+                            }
                         }
                     }
                     Err(e) => {
@@ -55,7 +57,7 @@ pub async fn handle(matches: &ArgMatches, settings: &Settings) -> anyhow::Result
             }
         }
 
-// Parsing and printing DB connection information
+        // Parsing and printing DB connection information
         if let Some(connection) = parse_db_url(&db_url) {
             println!("\nDB connection details:");
             println!("   prefix: {}", connection.prefix);
@@ -86,9 +88,32 @@ pub async fn handle(matches: &ArgMatches, settings: &Settings) -> anyhow::Result
 
         // Printing the API documentation URLs (Swagger UI and Raw OAS)
         if let Some(connection) = parse_db_url(&db_url) {
-            println!("Doc URLs (when server is running): ");
-            println!("   Swagger UI: http://{}:8080{}", connection.host, crate::api::SWAGGER);
-            println!("   Raw OAS: http://{}:8080{}", connection.host, crate::api::JSON);
+
+            // Define the target URLs
+            let ui_uri = 
+                format!("http://{}:8080{}", connection.host, crate::api::SWAGGER);
+            let json_uri = 
+                format!("http://{}:8080{}", connection.host, crate::api::JSON);
+
+            println!("Doc URLs: ");
+            // Send a GET request to the swagger UI endpoint
+            match reqwest::get(&ui_uri).await {
+                Ok(response) => {
+                    if response.status().is_success() {
+                        println!("   ✅ Swagger UI: {}", &ui_uri);
+                        println!("   ✅ Raw OAS: {}", &json_uri);
+                    } else {
+                        println!("   ⚠️ Swagger UI returned status: {}", response.status());
+                    }
+                }
+                Err(e) => {
+                    if e.is_connect() {
+                        println!("   ❌ Failed to connect to doc server: Ensure the server is running");
+                    } else {
+                        println!("   ❌ Doc server request error: {}", e);
+                    }
+                }
+            }
         }
         println!();
     }

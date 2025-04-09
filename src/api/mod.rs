@@ -19,10 +19,7 @@ pub const JSON: &str = "/v1/openapi.json";
 pub fn configure(state: Arc<ApplicationState>) -> Router {
     Router::new()
         // For Swagger UI
-        .merge(
-            SwaggerUi::new(SWAGGER)
-                .url(JSON, crate::api::v1::ApiDoc::openapi()),
-        )
+        .merge(SwaggerUi::new(SWAGGER).url(JSON, crate::api::v1::ApiDoc::openapi()))
         .nest("/v1", v1::configure(state))
 
     // For Scalar UI
