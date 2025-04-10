@@ -30,6 +30,15 @@ pub fn configure(state: Arc<ApplicationState>) -> Router {
                     crate::api::middleware::jwt::auth,
                 )),
         )
+        .route(
+            "/patient",
+            get(handlers::list_patients_handler::list)
+                .with_state(state.clone())
+                .route_layer(middleware::from_fn_with_state(
+                    state.clone(),
+                    crate::api::middleware::jwt::auth,
+                )),
+        )
 }
 
 // OAS doc
@@ -44,6 +53,7 @@ use utoipa::{
         handlers::create_patient_handler::create,
         handlers::login_handler::login,
         handlers::get_patient_handler::get_patient,
+        handlers::list_patients_handler::list,
     ),
     components(
         schemas(
@@ -61,6 +71,11 @@ use utoipa::{
             crate::api::response::create_patient_response::NameData,
             crate::api::response::create_patient_response::Patient,
             crate::api::response::create_patient_response::CreatePatientResponse,
+            crate::api::response::list_patients::AddressData,
+            crate::api::response::list_patients::BirthdateData,
+            crate::api::response::list_patients::NameData,
+            crate::api::response::list_patients::Patient,
+            crate::api::response::list_patients::ListPatientsResponse,
             crate::api::response::error::ErrorResponse,
         ),
     ),

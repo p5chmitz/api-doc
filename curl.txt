@@ -65,3 +65,16 @@ curl -v --request GET \
 --url http://127.0.0.1:8080/v1/patient/a6115489-91b0-4ae7-a453-14a5fe2f6f51 \
 --header "Content-Type: application/json" \
 --header "Authorization: Bearer $TOKEN"
+
+Get a list of patient records:
+
+curl -v --request GET \
+--url http://127.0.0.1:8080/v1/patient?first_name="Dingus" \
+--header "Content-Type: application/json" \
+--header "Authorization: Bearer $TOKEN"
+
+curl -v --request GET \
+--url http://127.0.0.1:8080/v1/patient?birth_year=1983 \
+--header "Content-Type: application/json" \
+--header "Authorization: Bearer $TOKEN"
+

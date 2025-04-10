@@ -1,5 +1,6 @@
 pub mod create_patient_response;
 pub mod error;
+pub mod list_patients;
 pub mod login_response;
 
 // Struct to store token claims for processing

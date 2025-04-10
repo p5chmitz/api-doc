@@ -117,29 +117,13 @@ pub enum Relation {
         to = "address::Column::Id"
     )]
     Address,
+
+    #[sea_orm(
+        belongs_to = "birthdate::Entity",
+        from = "Column::BirthdateId",
+        to = "birthdate::Column::Id"
+    )]
+    Birthdate,
 }
 
 impl ActiveModelBehavior for ActiveModel {}
-
-// Used for POST requests
-//#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-//pub struct CreatePatientRequest {
-//    pub name: NameRequest,
-//    pub address: AddressRequest,
-//    pub birth_date: NaiveDate,
-//}
-//#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-//pub struct NameRequest {
-//    pub first: String,
-//    pub middle: String,
-//    pub surname: String,
-//}
-//#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-//pub struct AddressRequest {
-//    pub address_lines: String,
-//    pub sublocality: String,
-//    pub locality: String,
-//    pub administrative_area: String,
-//    pub postal_code: String,
-//    pub country_region: String,
-//}
