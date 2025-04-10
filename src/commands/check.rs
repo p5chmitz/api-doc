@@ -88,12 +88,9 @@ pub async fn handle(matches: &ArgMatches, settings: &Settings) -> anyhow::Result
 
         // Printing the API documentation URLs (Swagger UI and Raw OAS)
         if let Some(connection) = parse_db_url(&db_url) {
-
             // Define the target URLs
-            let ui_uri = 
-                format!("http://{}:8080{}", connection.host, crate::api::SWAGGER);
-            let json_uri = 
-                format!("http://{}:8080{}", connection.host, crate::api::JSON);
+            let ui_uri = format!("http://{}:8080{}", connection.host, crate::api::SWAGGER);
+            let json_uri = format!("http://{}:8080{}", connection.host, crate::api::JSON);
 
             println!("Doc URLs: ");
             // Send a GET request to the swagger UI endpoint
@@ -108,7 +105,9 @@ pub async fn handle(matches: &ArgMatches, settings: &Settings) -> anyhow::Result
                 }
                 Err(e) => {
                     if e.is_connect() {
-                        println!("   ❌ Failed to connect to doc server: Ensure the server is running");
+                        println!(
+                            "   ❌ Failed to connect to doc server: Ensure the server is running"
+                        );
                     } else {
                         println!("   ❌ Doc server request error: {}", e);
                     }
