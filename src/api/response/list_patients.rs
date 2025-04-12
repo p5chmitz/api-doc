@@ -66,5 +66,5 @@ pub struct Patient {
 
 #[derive(Serialize, ToSchema)]
 pub struct ListPatientsResponse {
-    pub data: Vec<Patient>,
+    pub patients: Vec<Patient>,
 }
