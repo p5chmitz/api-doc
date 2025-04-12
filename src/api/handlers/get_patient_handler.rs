@@ -16,6 +16,7 @@ use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
 use std::sync::Arc;
 use uuid::Uuid;
 
+/// Get a patient record by record ID
 #[utoipa::path(
     get,
     path = "/patient/{patient_id}",

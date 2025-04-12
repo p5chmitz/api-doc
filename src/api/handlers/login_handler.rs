@@ -17,6 +17,7 @@ use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
 
 use crate::entities::user;
 
+/// Get a JWT
 #[utoipa::path(
     post,
     path = "/login",

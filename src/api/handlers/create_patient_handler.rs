@@ -15,6 +15,7 @@ use uuid::Uuid;
 //use crate::api::response::error::ErrorResponse;
 use crate::api::middleware::json::CustomJson;
 
+/// Create a patient record
 #[utoipa::path(
     post,
     path = "/patient",

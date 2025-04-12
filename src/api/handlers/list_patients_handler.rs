@@ -27,13 +27,14 @@ pub struct GetPatientQuery {
     pub birth_year: Option<i32>,
 }
 
+/// Returns a list of patients based on optional query parameters
 #[utoipa::path(
     get,
     path = "/patient",
     params(GetPatientQuery),
     tag = "Patients",
     responses(
-        (status = 200, description = "Success", body = CreatePatientResponse),
+        (status = 200, description = "Success", body = ListPatientsResponse),
         (status = 400, description = "Generic error response format", body = ErrorResponse),
     ),
     security(
@@ -129,7 +130,7 @@ pub async fn list(
                 response_vec.push(patient);
             }
 
-            return Ok(Json(ListPatientsResponse { data: response_vec }));
+            return Ok(Json(ListPatientsResponse { patients: response_vec }));
         }
         // If the search is not Ok, issue a generic DB
         // connection error and obfuscate the specifics
