@@ -7,13 +7,21 @@ use crate::api::response::error::AppError;
 use crate::api::response::TokenClaims;
 use crate::entities::patient;
 use crate::state::ApplicationState;
-use axum::extract::State;
-use axum::{debug_handler, Extension, Json};
+use axum::{
+    debug_handler,
+    extract::State,
+    http::StatusCode,
+    Extension, Json,
+};
 use sea_orm::{ActiveModelTrait, ActiveValue::Set};
 use std::sync::Arc;
 use uuid::Uuid;
 //use crate::api::response::error::ErrorResponse;
 use crate::api::middleware::json::CustomJson;
+use opentelemetry::{Key, Value};
+use tracing::instrument;
+use tracing::Span;
+use tracing_opentelemetry::OpenTelemetrySpanExt;
 
 /// Create a patient record
 #[utoipa::path(
@@ -30,11 +38,18 @@ use crate::api::middleware::json::CustomJson;
     )
 )]
 #[debug_handler]
+#[instrument(level = "info", name = "create_patient", skip_all)]
 pub async fn create(
-    Extension(_claims): Extension<TokenClaims>,
+    Extension(claims): Extension<TokenClaims>,
     State(state): State<Arc<ApplicationState>>,
     CustomJson(payload): CustomJson<CreatePatientRequest>,
 ) -> Result<Json<CreatePatientResponse>, AppError> {
+    // Start a tracing span
+    let span = Span::current();
+    span.set_attribute(Key::from("http.method"), Value::from("POST"));
+    let name = &claims.sub;
+    span.set_attribute(Key::from("user"), Value::from(name.to_string()));
+
     // Validations
     let payload_ref = &payload;
     validate(payload_ref);
@@ -71,11 +86,8 @@ pub async fn create(
 
     // Stores Models
     let name_model: patient::name::Model = name_active_model.insert(db).await?;
-
     let address_model: patient::address::Model = address_active_model.insert(db).await?;
-
     let birthdate_model: patient::birthdate::Model = birthdate_active_model.insert(db).await?;
-
     let uuid = Uuid::new_v4(); // Creates the patient_record_id
 
     // Create and store the full patient record
@@ -113,6 +125,9 @@ pub async fn create(
         },
     };
 
+    span.set_attribute(
+        Key::from("http.status_code"), 
+        Value::from(StatusCode::OK.as_u16() as i64));
     Ok(Json(CreatePatientResponse {
         //status: 200,
         data: response_data,

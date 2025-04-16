@@ -12,10 +12,14 @@ use axum::{
     http::StatusCode,
     Extension, Json,
 };
+use opentelemetry::{Key, Value};
 use sea_orm::{ColumnTrait, EntityTrait, JoinType, QueryFilter, QuerySelect, RelationTrait};
 use std::sync::Arc;
+use tracing::instrument;
+use tracing::Span;
+use tracing_opentelemetry::OpenTelemetrySpanExt;
 
-#[derive(serde::Deserialize, utoipa::ToSchema, utoipa::IntoParams)]
+#[derive(Debug, serde::Deserialize, utoipa::ToSchema, utoipa::IntoParams)]
 pub struct GetPatientQuery {
     #[schema(example = "Jane")]
     pub first_name: Option<String>,
@@ -42,11 +46,23 @@ pub struct GetPatientQuery {
     )
 )]
 #[debug_handler]
+#[instrument(level = "info", name = "list_patient", skip_all)]
 pub async fn list(
-    Extension(_claims): Extension<TokenClaims>,
+    Extension(claims): Extension<TokenClaims>,
     State(state): State<Arc<ApplicationState>>,
     Query(query): Query<GetPatientQuery>,
 ) -> Result<Json<ListPatientsResponse>, AppError> {
+
+    // Create a span and add info
+    let mut span = Span::current();
+    span.set_attribute(Key::from("http.method"), Value::from("POST"));
+    span.set_attribute(
+        Key::from("request.payload"),
+        Value::from(format!("{:?}", &query)),
+    );
+    let name = &claims.sub;
+    span.set_attribute(Key::from("user"), Value::from(name.to_string()));
+
     // Create a DB connection binding to share it
     let db_conn = state.db_conn.load();
     let db = db_conn.as_ref();
@@ -84,7 +100,13 @@ pub async fn list(
                     .one(db)
                     .await?
                     .ok_or_else(|| {
-                        AppError(StatusCode::NOT_FOUND, anyhow!("Name record not found"))
+                        let code = StatusCode::NOT_FOUND;
+                        set_status_code(&mut span, code);
+                        set_request_payload(&mut span, &query);
+                        AppError(
+                            code,
+                            anyhow!("Name record not found"),
+                        )
                     })?;
 
                 // Fetch related address
@@ -92,7 +114,13 @@ pub async fn list(
                     .one(db)
                     .await?
                     .ok_or_else(|| {
-                        AppError(StatusCode::NOT_FOUND, anyhow!("Address record not found"))
+                        let code = StatusCode::NOT_FOUND;
+                        set_status_code(&mut span, code);
+                        set_request_payload(&mut span, &query);
+                        AppError(
+                            code,
+                            anyhow!("Address record not found"),
+                        )
                     })?;
 
                 // Fetch related birthdate
@@ -100,7 +128,13 @@ pub async fn list(
                     .one(db)
                     .await?
                     .ok_or_else(|| {
-                        AppError(StatusCode::NOT_FOUND, anyhow!("Birthdate record not found"))
+                        let code = StatusCode::NOT_FOUND;
+                        set_status_code(&mut span, code);
+                        set_request_payload(&mut span, &query);
+                        AppError(
+                            code,
+                            anyhow!("Birthdate record not found"),
+                        )
                     })?;
 
                 // Construct the Patient
@@ -130,15 +164,35 @@ pub async fn list(
                 response_vec.push(patient);
             }
 
-            return Ok(Json(ListPatientsResponse { patients: response_vec }));
+            set_status_code(&mut span, StatusCode::OK);
+            return Ok(Json(ListPatientsResponse {
+                patients: response_vec,
+            }));
         }
         // If the search is not Ok, issue a generic DB
         // connection error and obfuscate the specifics
         Err(_) => {
+            let code = StatusCode::INTERNAL_SERVER_ERROR;
+            set_status_code(&mut span, code);
+            set_request_payload(&mut span, &query);
             return Err(AppError(
-                StatusCode::INTERNAL_SERVER_ERROR,
+                code,
                 anyhow!("Uh oh..."),
-            ))
+            ));
         }
     }
 }
+
+fn set_status_code(span: &mut Span, code: StatusCode) {
+    span.set_attribute(
+        Key::from("http.status_code"), 
+        Value::from(code.as_u16() as i64)
+    )
+}
+fn set_request_payload(span: &mut Span, query: &GetPatientQuery) {
+    span.set_attribute(
+        Key::from("request.payload"), 
+        Value::from(format!("{:?}", query)),
+    )
+}
+

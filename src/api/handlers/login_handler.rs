@@ -14,6 +14,11 @@ use anyhow::anyhow;
 use argon2::Argon2;
 use password_hash::{PasswordHash, PasswordVerifier};
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
+use tracing::instrument;
+//use tracing::{Level, Span};
+use opentelemetry::{Key, Value};
+use tracing::Span;
+use tracing_opentelemetry::OpenTelemetrySpanExt;
 
 use crate::entities::user;
 
@@ -28,10 +33,15 @@ use crate::entities::user;
         (status = 400, description = "Generic error response format", body = ErrorResponse),
     ),
 )]
+#[instrument(level = "info", name = "login", skip_all)]
 pub async fn login(
     State(state): State<Arc<ApplicationState>>,
     CustomJson(payload): CustomJson<LoginRequest>,
 ) -> Result<Json<LoginResponse>, AppError> {
+    // Start a tracing span
+    let span = Span::current();
+    span.set_attribute(Key::from("http.method"), Value::from("POST"));
+
     // Validate that the password is correct
     match user::Entity::find()
         .filter(user::Column::Username.eq(&payload.username))
@@ -41,37 +51,50 @@ pub async fn login(
         .await
     {
         Ok(admins) => {
+            // Adds the username to the trace
+            let name = &payload.username;
+            span.set_attribute(Key::from("user"), Value::from(name.to_string()));
+
             // The user wasn't found
             if admins.is_none() {
-                return Err(AppError(
-                    StatusCode::UNAUTHORIZED,
-                    anyhow!("User doesn't exist"),
-                ));
+                //span.record("payload", &tracing::field::debug(&payload));
+                let response: AppError =
+                    AppError(StatusCode::UNAUTHORIZED, anyhow!("User doesn't exist"));
+                span.set_attribute(
+                    Key::from("request.payload"),
+                    Value::from(format!("{:?}", &payload)),
+                );
+                span.set_attribute(
+                    Key::from("response.payload"),
+                    Value::from(format!("{:?}", &response)),
+                );
+                span.set_attribute(Key::from("http.status_code"), Value::from(401));
+                return Err(response);
             }
-            //if admins.is_empty() {
-            //    return Err(StatusCode::UNAUTHORIZED)
-            //}
 
             // The password doesn't match
-            //let admin = &admins[0];
-            if validate_password(&payload.password, &admins.unwrap().password)
-                //if validate_password(&payload.password, &admin.password)
-                .is_err()
-            {
-                //return Err(StatusCode::UNAUTHORIZED);
-                return Err(AppError(
-                    StatusCode::UNAUTHORIZED,
-                    anyhow!("Incorrect password"),
-                ));
+            if validate_password(&payload.password, &admins.unwrap().password).is_err() {
+                let response: AppError =
+                    AppError(StatusCode::UNAUTHORIZED, anyhow!("User doesn't exist"));
+                span.set_attribute(
+                    Key::from("request.payload"),
+                    Value::from(format!("{:?}", &payload)),
+                );
+                span.set_attribute(
+                    Key::from("response.payload"),
+                    Value::from(format!("{:?}", &response)),
+                );
+                span.set_attribute(Key::from("http.status_code"), Value::from(401));
+                return Err(response);
             }
         }
         // Something went wrong on the client side
-        //Err(_) => return Err(StatusCode::INTERNAL_SERVER_ERROR),
         Err(_) => {
+            span.set_attribute(Key::from("http.status_code"), Value::from(500));
             return Err(AppError(
                 StatusCode::INTERNAL_SERVER_ERROR,
                 anyhow!("We fucked up"),
-            ))
+            ));
         }
     }
 
@@ -98,6 +121,10 @@ pub async fn login(
     .unwrap_or("".to_string());
 
     let response = LoginResponse { token };
+
+    span.set_attribute(Key::from("http.status_code"), Value::from(200));
+
+    //tracing::info!("Login span");
 
     Ok(Json(response))
 }

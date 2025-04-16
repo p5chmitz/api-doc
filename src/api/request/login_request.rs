@@ -2,7 +2,7 @@ use serde::Deserialize;
 use utoipa::ToSchema;
 
 //#[allow(dead_code)]
-#[derive(Deserialize, ToSchema)]
+#[derive(Deserialize, ToSchema, std::fmt::Debug)]
 pub struct LoginRequest {
     /// Your username
     #[schema(default = "admin")]

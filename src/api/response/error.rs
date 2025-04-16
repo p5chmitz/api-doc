@@ -4,7 +4,7 @@ use axum::Json;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-#[derive(Serialize, ToSchema)]
+#[derive(Serialize, ToSchema, Debug)]
 pub struct ErrorResponse {
     /// The HTTP status code value
     #[schema(example = "422")]
@@ -27,6 +27,7 @@ pub struct ErrorResponse {
 //    _Error,
 //}
 
+#[derive(Debug)]
 pub struct AppError(pub StatusCode, pub anyhow::Error);
 
 impl IntoResponse for AppError {

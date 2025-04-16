@@ -1,10 +1,8 @@
 use super::handlers;
 use crate::state::ApplicationState;
-//use crate::api::handlers::jwt::auth;
 use axum::routing::{get, post};
 use axum::{middleware, Router};
 use std::sync::Arc;
-//use tower_http::cors::{CorsLayer, Any};
 
 pub fn configure(state: Arc<ApplicationState>) -> Router {
     Router::new()
