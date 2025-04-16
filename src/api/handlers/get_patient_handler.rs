@@ -47,7 +47,7 @@ pub async fn get_patient(
     Path(patient_id): Path<Uuid>,
 ) -> Result<Json<CreatePatientResponse>, AppError> {
 
-    let mut span = Span::current();
+    let span = Span::current();
     span.set_attribute(
     	Key::from("http.method"), 
 	Value::from("GET")
@@ -80,8 +80,12 @@ pub async fn get_patient(
                     .await?
                     .ok_or_else(|| {
                         let code = StatusCode::NOT_FOUND;
-                        set_status_code(&mut span, code);
-                        set_request_payload(&mut span, &patient_id);
+                        span.set_attribute(
+                            Key::from("http.status_code"), 
+                            Value::from(code.as_u16() as i64));
+                        span.set_attribute(
+                            Key::from("request.payload"), 
+                            Value::from(format!("{:?}", &patient_id)));
                         AppError(
                             code, 
                             anyhow!("Birthdate record not found"))
@@ -93,8 +97,12 @@ pub async fn get_patient(
                     .await?
                     .ok_or_else(|| {
                         let code = StatusCode::NOT_FOUND;
-                        set_status_code(&mut span, code);
-                        set_request_payload(&mut span, &patient_id);
+                        span.set_attribute(
+                            Key::from("http.status_code"), 
+                            Value::from(code.as_u16() as i64));
+                        span.set_attribute(
+                            Key::from("request.payload"), 
+                            Value::from(format!("{:?}", &patient_id)));
                         AppError(
                             code, 
                             anyhow!("Birthdate record not found"))
@@ -106,8 +114,12 @@ pub async fn get_patient(
                     .await?
                     .ok_or_else(|| {
                         let code = StatusCode::NOT_FOUND;
-                        set_status_code(&mut span, code);
-                        set_request_payload(&mut span, &patient_id);
+                        span.set_attribute(
+                            Key::from("http.status_code"), 
+                            Value::from(code.as_u16() as i64));
+                        span.set_attribute(
+                            Key::from("request.payload"), 
+                            Value::from(format!("{:?}", &patient_id)));
                         AppError(
                             code, 
                             anyhow!("Birthdate record not found"))
@@ -137,7 +149,10 @@ pub async fn get_patient(
                     },
                 };
                 // Happy path
-                set_status_code(&mut span, StatusCode::OK);
+                    span.set_attribute(
+        Key::from("http.status_code"), 
+        Value::from(StatusCode::OK.as_u16() as i64)
+    );
                 return Ok(Json(CreatePatientResponse {
                     data: response_data,
                 }));
@@ -145,8 +160,12 @@ pub async fn get_patient(
             // return a 404 NOT_FOUND error
             } else {
                 let code = StatusCode::NOT_FOUND;
-                set_status_code(&mut span, code);
-                set_request_payload(&mut span, &patient_id);
+                span.set_attribute(
+                    Key::from("http.status_code"), 
+                    Value::from(code.as_u16() as i64));
+                span.set_attribute(
+                    Key::from("request.payload"), 
+                    Value::from(format!("{:?}", &patient_id)));
                 return Err(AppError(
                     code,
                     anyhow!("Patient {patient_id} not found"),
@@ -157,25 +176,18 @@ pub async fn get_patient(
         // and obfuscate the specifics
         Err(_) => {
             let code = StatusCode::INTERNAL_SERVER_ERROR;
-            set_status_code(&mut span, code);
-            set_request_payload(&mut span, &patient_id);
+            span.set_attribute(
+                Key::from("http.status_code"), 
+                Value::from(code.as_u16() as i64)
+            );
+            span.set_attribute(
+                Key::from("request.payload"), 
+                Value::from(format!("{:?}", &patient_id)),
+            );
             return Err(AppError(
                 code,
                 anyhow!("Uh oh..."),
             ))
         }
     }
-}
-
-fn set_status_code(span: &mut Span, code: StatusCode) {
-    span.set_attribute(
-        Key::from("http.status_code"), 
-        Value::from(code.as_u16() as i64)
-    )
-}
-fn set_request_payload(span: &mut Span, id: &Uuid) {
-    span.set_attribute(
-        Key::from("request.payload"), 
-        Value::from(format!("{:?}", &id)),
-    )
 }
