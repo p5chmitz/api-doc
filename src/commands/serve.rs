@@ -55,17 +55,8 @@ fn start_tokio(port: u16, settings: &Settings) -> anyhow::Result<()> {
         .build()
         .context("Failed to build Tokio runtime")?
         .block_on(async move {
-            // Initializes global otel span propagator
-            global::set_text_map_propagator(TraceContextPropagator::new());
 
-            // Configures otel endpoint and logging level from .env
-            // and defines default backups
-            let otlp_endpoint = settings
-                .tracing
-                .otlp_endpoint
-                .clone()
-                .unwrap_or_else(|| "http://localhost:4317".to_string());
-
+            // Sets log level from .evn file or defaults to DEBUG
             let log_level = settings
                 .logging
                 .log_level
@@ -73,22 +64,50 @@ fn start_tokio(port: u16, settings: &Settings) -> anyhow::Result<()> {
                 .and_then(|lvl| LevelFilter::from_str(lvl).ok())
                 .unwrap_or(LevelFilter::DEBUG);
 
-            // Initializes otel providers
-            let tracer = init_tracer(&otlp_endpoint)?;
-            let _ = init_metrics(&otlp_endpoint);
-            let _ = init_logs(&otlp_endpoint);
-            //let _ = init_logs(&otlp_endpoint)
-            //    .context("Failed to initialize OpenTelemetry logs")?;
+            // If an OTLP endpoint is provided in the .env file:
+            //   - Initializes span propagator for distributed tracing
+            //   - Initializes OTLP tracing, logging, and metrics exporters
+            //   - Initializes subscriber with OTLP layer & default console logging
+            // else: 
+            //   - Initializes subscriber with pretty-print logging to console only
+            // NOTE: Default OTLP/gRPC endpoint for SigNoz: http://localhost:4317
+            // TODO: Get SigNoz logging & metrics working
+            if let Some(otlp_endpoint) = settings.tracing.otlp_endpoint.clone() {
 
-            // Build and initializes tracing subscriber with stdout
-            let tracing_layer = tracing_opentelemetry::layer().with_tracer(tracer);
-            let subscriber = Registry::default()
-                .with(log_level)
-                //.with(fmt::Layer::default().with_writer(std::io::stdout).pretty())
-                .with(fmt::Layer::default())
-                .with(tracing_layer);
-            tracing::subscriber::set_global_default(subscriber)
-                .context("Failed to set global tracing subscriber")?;
+                // Initializes global otel span propagator
+                global::set_text_map_propagator(TraceContextPropagator::new());
+
+                // Initializes otel providers
+                let tracer = init_tracer(&otlp_endpoint)?;
+                let _ = init_metrics(&otlp_endpoint);
+                let _ = init_logs(&otlp_endpoint);
+
+                // Build and initializes tracing subscriber with stdout
+                let tracing_layer = tracing_opentelemetry::layer()
+                    .with_tracer(tracer);
+
+                // Configurees the subscriber with the tracing layer
+                let subscriber = Registry::default()
+                    .with(log_level)
+                    .with(fmt::Layer::default()) // Basic console logging
+                    .with(tracing_layer); // OTLP span exporter
+
+                // Initializes the subscriber
+                tracing::subscriber::set_global_default(subscriber)
+                    .context("Failed to set global tracing subscriber")?;
+
+            } else {
+
+                // Configures the subscriber with pretty console output
+                let subscriber = Registry::default()
+                    .with(log_level)
+                    .with(fmt::Layer::default()
+                        .with_writer(std::io::stdout).pretty());
+
+                // Initializes the subscriber
+                tracing::subscriber::set_global_default(subscriber)
+                    .context("Failed to set global tracing subscriber")?;
+            }
 
             // Initialize DB connection and app state
             let db_url = settings
