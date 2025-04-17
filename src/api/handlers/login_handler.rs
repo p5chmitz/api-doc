@@ -75,7 +75,7 @@ pub async fn login(
             // The password doesn't match
             if validate_password(&payload.password, &admins.unwrap().password).is_err() {
                 let response: AppError =
-                    AppError(StatusCode::UNAUTHORIZED, anyhow!("User doesn't exist"));
+                    AppError(StatusCode::UNAUTHORIZED, anyhow!("Invalid password"));
                 span.set_attribute(
                     Key::from("request.payload"),
                     Value::from(format!("{:?}", &payload)),

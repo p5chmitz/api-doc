@@ -7,12 +7,7 @@ use crate::api::response::error::AppError;
 use crate::api::response::TokenClaims;
 use crate::entities::patient;
 use crate::state::ApplicationState;
-use axum::{
-    debug_handler,
-    extract::State,
-    http::StatusCode,
-    Extension, Json,
-};
+use axum::{debug_handler, extract::State, http::StatusCode, Extension, Json};
 use sea_orm::{ActiveModelTrait, ActiveValue::Set};
 use std::sync::Arc;
 use uuid::Uuid;
@@ -126,8 +121,9 @@ pub async fn create(
     };
 
     span.set_attribute(
-        Key::from("http.status_code"), 
-        Value::from(StatusCode::OK.as_u16() as i64));
+        Key::from("http.status_code"),
+        Value::from(StatusCode::OK.as_u16() as i64),
+    );
     Ok(Json(CreatePatientResponse {
         //status: 200,
         data: response_data,

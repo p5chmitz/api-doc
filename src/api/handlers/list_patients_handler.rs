@@ -52,7 +52,6 @@ pub async fn list(
     State(state): State<Arc<ApplicationState>>,
     Query(query): Query<GetPatientQuery>,
 ) -> Result<Json<ListPatientsResponse>, AppError> {
-
     // Create a span and add info
     let span = Span::current();
     span.set_attribute(Key::from("http.method"), Value::from("POST"));
@@ -102,15 +101,14 @@ pub async fn list(
                     .ok_or_else(|| {
                         let code = StatusCode::NOT_FOUND;
                         span.set_attribute(
-                            Key::from("http.status_code"), 
-                            Value::from(code.as_u16() as i64));
+                            Key::from("http.status_code"),
+                            Value::from(code.as_u16() as i64),
+                        );
                         span.set_attribute(
-                            Key::from("request.payload"), 
-                            Value::from(format!("{:?}", &query)));
-                        AppError(
-                            code,
-                            anyhow!("Name record not found"),
-                        )
+                            Key::from("request.payload"),
+                            Value::from(format!("{:?}", &query)),
+                        );
+                        AppError(code, anyhow!("Name record not found"))
                     })?;
 
                 // Fetch related address
@@ -120,15 +118,14 @@ pub async fn list(
                     .ok_or_else(|| {
                         let code = StatusCode::NOT_FOUND;
                         span.set_attribute(
-                            Key::from("http.status_code"), 
-                            Value::from(code.as_u16() as i64));
+                            Key::from("http.status_code"),
+                            Value::from(code.as_u16() as i64),
+                        );
                         span.set_attribute(
-                            Key::from("request.payload"), 
-                            Value::from(format!("{:?}", &query)));
-                        AppError(
-                            code,
-                            anyhow!("Address record not found"),
-                        )
+                            Key::from("request.payload"),
+                            Value::from(format!("{:?}", &query)),
+                        );
+                        AppError(code, anyhow!("Address record not found"))
                     })?;
 
                 // Fetch related birthdate
@@ -138,15 +135,14 @@ pub async fn list(
                     .ok_or_else(|| {
                         let code = StatusCode::NOT_FOUND;
                         span.set_attribute(
-                            Key::from("http.status_code"), 
-                            Value::from(code.as_u16() as i64));
+                            Key::from("http.status_code"),
+                            Value::from(code.as_u16() as i64),
+                        );
                         span.set_attribute(
-                            Key::from("request.payload"), 
-                            Value::from(format!("{:?}", &query)));
-                        AppError(
-                            code,
-                            anyhow!("Birthdate record not found"),
-                        )
+                            Key::from("request.payload"),
+                            Value::from(format!("{:?}", &query)),
+                        );
+                        AppError(code, anyhow!("Birthdate record not found"))
                     })?;
 
                 // Construct the Patient
@@ -177,8 +173,9 @@ pub async fn list(
             }
 
             span.set_attribute(
-                Key::from("http.status_code"), 
-                Value::from(StatusCode::OK.as_u16() as i64));
+                Key::from("http.status_code"),
+                Value::from(StatusCode::OK.as_u16() as i64),
+            );
             return Ok(Json(ListPatientsResponse {
                 patients: response_vec,
             }));
@@ -188,15 +185,14 @@ pub async fn list(
         Err(_) => {
             let code = StatusCode::INTERNAL_SERVER_ERROR;
             span.set_attribute(
-                Key::from("http.status_code"), 
-                Value::from(code.as_u16() as i64));
+                Key::from("http.status_code"),
+                Value::from(code.as_u16() as i64),
+            );
             span.set_attribute(
-                Key::from("request.payload"), 
-                Value::from(format!("{:?}", &query)));
-            return Err(AppError(
-                code,
-                anyhow!("Uh oh..."),
-            ));
+                Key::from("request.payload"),
+                Value::from(format!("{:?}", &query)),
+            );
+            return Err(AppError(code, anyhow!("Uh oh...")));
         }
     }
 }
