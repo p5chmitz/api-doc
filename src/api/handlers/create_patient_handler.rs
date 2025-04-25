@@ -1,6 +1,10 @@
 use crate::api::request::create_patient_request::CreatePatientRequest;
 use crate::api::response::create_patient_response::{
-    AddressData, BirthdateData, CreatePatientResponse, NameData, Patient,
+    AddressData, 
+    BirthdateData, 
+    CreatePatientResponse, 
+    NameData, 
+    Patient,
 };
 //use chrono::NaiveDate;
 use crate::api::response::error::AppError;
@@ -19,10 +23,13 @@ use tracing::Span;
 use tracing_opentelemetry::OpenTelemetrySpanExt;
 
 /// Create a patient record
+///
+/// Create a patient record by supplying patient information. The system generates and returns 
+/// a patient ID as UUID to use with subsequent patient record operations.
 #[utoipa::path(
     post,
     path = "/patient",
-    tag = "Patients",
+    tag = "Patient Records",
     request_body = CreatePatientRequest,
     responses(
         (status = 200, description = "Success", body = CreatePatientResponse),
@@ -91,6 +98,7 @@ pub async fn create(
         address_id: Set(address_model.id),
         birthdate_id: Set(birthdate_model.id),
         patient_id: Set(uuid),
+        active_flag: Set(true),
         ..Default::default()
     };
 
