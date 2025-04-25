@@ -1,16 +1,24 @@
-use crate::api::response::create_patient_response::{
-    AddressData, BirthdateData, CreatePatientResponse, NameData, Patient,
+use crate::api::response::{
+    create_patient_response::{
+        AddressData, 
+        BirthdateData, 
+        CreatePatientResponse, 
+        NameData, 
+        Patient
+    },
+    error::AppError
 };
-use crate::api::response::error::AppError;
 use crate::api::response::TokenClaims;
 use crate::entities::patient::{self, address, birthdate, name};
 use crate::state::ApplicationState;
+
 use anyhow::anyhow;
 use axum::{
     debug_handler,
     extract::{Path, State},
     http::StatusCode,
-    Extension, Json,
+    Extension, 
+    Json,
 };
 use opentelemetry::{Key, Value};
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
@@ -20,7 +28,9 @@ use tracing::Span;
 use tracing_opentelemetry::OpenTelemetrySpanExt;
 use uuid::Uuid;
 
-/// Get a patient record by record ID
+/// Get a patient record
+///
+/// Get a patient record by patient ID.
 #[utoipa::path(
     get,
     path = "/patient/{patient_id}",
@@ -30,7 +40,7 @@ use uuid::Uuid;
         ("patient_id" = String, Path, description = "Patient ID as UUID v4", example = "3973ebb8-11e5-4725-93b7-3b752caad60f
 ")
     ),
-    tag = "Patients",
+    tag = "Patient Records",
     responses(
         (status = 200, description = "Success", body = CreatePatientResponse),
         (status = 400, description = "Generic error response format", body = ErrorResponse),
