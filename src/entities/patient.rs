@@ -77,6 +77,8 @@ pub struct Model {
     #[serde(skip_deserializing)]
     pub id: i32,
 
+    pub active_flag: bool,
+
     pub patient_id: Uuid,
     pub created_at: DateTime<Utc>,
 
