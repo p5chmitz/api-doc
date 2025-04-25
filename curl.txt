@@ -1,46 +1,45 @@
 Get a JWT:
 
 curl -v --request POST \
---url http://127.0.0.1:8080/v1/login \
+--url http://127.0.0.1:3000/v1/login \
 --header "Content-Type: application/json" \
 --data '{"username": "admin", "password": "apidocpass"}'
 
 Get and save token to an env var:
 
 TOKEN=$(curl -s --request POST \
-  --url http://127.0.0.1:8080/v1/login \
+  --url http://127.0.0.1:3000/v1/login \
   --header "Content-Type: application/json" \
   --data '{"username": "admin", "password": "apidocpass"}' | jq -r '.token')
 
 Create a patient record:
 
 curl -v --request POST \
---url http://127.0.0.1:8080/v1/patient \
+--url http://127.0.0.1:3000/v1/patient \
 --header "Content-Type: application/json" \
 --header "Authorization: Bearer $TOKEN" \
 --data '{
   "name": {
-    "first": "Dingus",
-    "middle": "A.",
-    "surname": "Dangus"
+    "first": "Bobson",
+    "surname": "Dugnutt"
   },
   "address": {
-    "address_lines": ["123 Thunder St", "ste 1300"],
+    "address_lines": ["311 Lightning St", "ste 1300"],
     "sublocality": "",
     "locality": "",
     "administrative_area": "",
-    "postal_code": "",
+    "postal_code": "97217",
     "country_region": "USA"
   },
   "birth_date": {
-    "day": 12,
-    "month": 8,
-    "year": 1987
+    "day": 8,
+    "month": 10,
+    "year": 1969
   }
 }'
 
 curl -v --request POST \
---url http://127.0.0.1:8080/v1/patient \
+--url http://127.0.0.1:3000/v1/patient \
 --header "Content-Type: application/json" \
 --header "Authorization: Bearer $TOKEN" \
 --data '{
@@ -62,19 +61,20 @@ curl -v --request POST \
 Get a patient recrod:
 
 curl -v --request GET \
---url http://127.0.0.1:8080/v1/patient/a6115489-91b0-4ae7-a453-14a5fe2f6f51 \
+--url http://127.0.0.1:3000/v1/patient/a6115489-91b0-4ae7-a453-14a5fe2f6f51 \
 --header "Content-Type: application/json" \
 --header "Authorization: Bearer $TOKEN"
 
 Get a list of patient records:
 
 curl -v --request GET \
---url http://127.0.0.1:8080/v1/patient?first_name="Dingus" \
+--url http://127.0.0.1:3000/v1/patient?first_name="Dingus" \
 --header "Content-Type: application/json" \
---header "Authorization: Bearer $TOKEN"
+--header "Authorization: Bearer $TOKEN" \
+| json_pp
 
 curl -v --request GET \
---url http://127.0.0.1:8080/v1/patient?birth_year=1983 \
+--url http://127.0.0.1:3000/v1/patient?birth_year=1983 \
 --header "Content-Type: application/json" \
---header "Authorization: Bearer $TOKEN"
+--header "Authorization: Bearer $TOKEN" | json_pp
 
