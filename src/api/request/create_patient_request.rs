@@ -1,12 +1,9 @@
-//use chrono::NaiveDate;
-//use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
-//use uuid::Uuid;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
 /// The full legal name of the patient
-pub struct Name {
+pub struct NameCreate {
     /// The first name, sometimes refered to as given name, of the patient
     #[schema(example = "John")]
     pub first: String,
@@ -21,7 +18,7 @@ pub struct Name {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
-pub struct Address {
+pub struct AddressCreate {
     /// Address lines consist of the street number, street name, unit number, or suite number of an address
     ///
     /// Unstructured address lines describing the lower levels of an address. Because values in address_lines do not have type information and may sometimes contain multiple values in a single field (e.g. "Austin, TX"), it is important that the line order is clear. The order of address lines should be "envelope order" for the country/region of the address. In places where this can vary (e.g. Japan), address_language is used to make it explicit (e.g. "ja" for large-to-small ordering and "ja-Latn" or "en" for small-to-large). This way, the most specific line of an address can be selected based on the language. The minimum permitted structural representation of an address consists of a region_code with all remaining information placed in the address_lines. It would be possible to format such an address very approximately without geocoding, but no semantic reasoning could be made about any of the address components until it was at least partially resolved. Creating an address only containing a region_code and address_lines, and then geocoding is the recommended way to handle completely unstructured addresses (as opposed to guessing which parts of the address should be localities or administrative areas).
@@ -57,7 +54,7 @@ pub struct Address {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
-pub struct BirthDate {
+pub struct BirthDateCreate {
     /// The day for a birth date with no leading zeros
     #[schema(example = "6")]
     pub day: i32,
@@ -79,7 +76,7 @@ pub struct BirthDate {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
 /// Patient information
 pub struct CreatePatientRequest {
-    pub name: Name,
-    pub address: Address,
-    pub birth_date: BirthDate,
+    pub name: NameCreate,
+    pub address: AddressCreate,
+    pub birth_date: BirthDateCreate,
 }
