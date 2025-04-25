@@ -82,7 +82,7 @@ fn start_tokio(port: u16, settings: &Settings) -> anyhow::Result<()> {
                 let _ = init_metrics(&otlp_endpoint);
                 let _ = init_logs(&otlp_endpoint);
 
-                // Build and initializes tracing subscriber with stdout
+                // Create OTLP tracing layer
                 let tracing_layer = tracing_opentelemetry::layer()
                     .with_tracer(tracer);
 
