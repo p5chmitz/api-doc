@@ -1,6 +1,10 @@
 use crate::api::response::error::AppError;
 use crate::api::response::list_patients::{
-    AddressData, BirthdateData, ListPatientsResponse, NameData, Patient,
+    AddressData, 
+    BirthdateData, 
+    ListPatientsResponse, 
+    NameData, 
+    Patient,
 };
 use crate::api::response::TokenClaims;
 use crate::entities::patient::{self, address, birthdate, name};
@@ -13,7 +17,14 @@ use axum::{
     Extension, Json,
 };
 use opentelemetry::{Key, Value};
-use sea_orm::{ColumnTrait, EntityTrait, JoinType, QueryFilter, QuerySelect, RelationTrait};
+use sea_orm::{
+    ColumnTrait, 
+    EntityTrait, 
+    JoinType, 
+    QueryFilter, 
+    QuerySelect, 
+    RelationTrait
+};
 use std::sync::Arc;
 use tracing::instrument;
 use tracing::Span;
@@ -31,12 +42,15 @@ pub struct GetPatientQuery {
     pub birth_year: Option<i32>,
 }
 
-/// Returns a list of patients based on optional query parameters
+/// List patient records
+///
+/// Returns a list of patient records based on optional query parameters. The system returns all
+/// active records if you do not provide any query arguments.
 #[utoipa::path(
     get,
     path = "/patient",
     params(GetPatientQuery),
-    tag = "Patients",
+    tag = "Patient Records",
     responses(
         (status = 200, description = "Success", body = ListPatientsResponse),
         (status = 400, description = "Generic error response format", body = ErrorResponse),
@@ -69,8 +83,10 @@ pub async fn list(
     // Start building the query
     let mut query_builder = patient::Entity::find();
     query_builder = query_builder
-        .join(JoinType::InnerJoin, patient::Relation::Name.def())
-        .join(JoinType::InnerJoin, patient::Relation::Birthdate.def());
+        .join(JoinType::LeftJoin, patient::Relation::Name.def())
+        .join(JoinType::LeftJoin, patient::Relation::Birthdate.def())
+        // Only returns active (non-deleted) patient records
+        .filter(patient::Column::ActiveFlag.into_expr().eq(true));
 
     // Add filters if query parameters are present
     if let Some(first) = &query.first_name {
