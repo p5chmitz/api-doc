@@ -2,3 +2,4 @@
 /migration/target/*
 /migration/src/m2*
 !/migration/src/m20250407_*
+curl.txt
