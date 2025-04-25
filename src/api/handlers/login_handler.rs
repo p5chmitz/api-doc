@@ -22,7 +22,9 @@ use tracing_opentelemetry::OpenTelemetrySpanExt;
 
 use crate::entities::user;
 
-/// Get a JWT
+/// Generate a JWT
+///
+/// Generate a JSON web token (JWT) from your user credentials.
 #[utoipa::path(
     post,
     path = "/login",
@@ -126,6 +128,7 @@ pub async fn login(
 
     //tracing::info!("Login span");
 
+    //Ok(crate::api::middleware::json::to_response(Json(response)))
     Ok(Json(response))
 }
 
