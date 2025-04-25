@@ -1,4 +1,0 @@
-/target
-/migration/target/*
-/migration/src/m2*
-!/migration/src/m20250407_*

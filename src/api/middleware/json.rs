@@ -3,6 +3,7 @@ use axum::{
     async_trait,
     body::Body,
     extract::{rejection::JsonRejection, FromRequest},
+    response::{IntoResponse, Response},
     http::{Request, StatusCode},
     Json,
 };
@@ -100,4 +101,11 @@ where
             }
         }
     }
+}
+
+#[instrument(level = "info", name = "middleware_json_wrapper", skip_all)]
+pub fn to_response(res: Json<Value>) -> Response {
+    let mut body = res.0.to_string();
+    body.push('\n');
+    body.into_response()
 }
