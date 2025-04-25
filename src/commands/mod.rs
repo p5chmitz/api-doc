@@ -1,6 +1,5 @@
 mod check;
 mod create_user;
-mod hello;
 mod migrate;
 mod serve;
 
